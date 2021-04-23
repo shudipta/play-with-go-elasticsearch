@@ -1,6 +1,6 @@
 # play-with-go-elasticsearch
 
-Time pass with official go client of elasticsearch
+Time pass with official go client of [Elasticsearch](https://www.elastic.co/) [go-elasticsearch:v7](https://github.com/elastic/go-elasticsearch/blob/v7.12.0)
 
 ## Contains
 
