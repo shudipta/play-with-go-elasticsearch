@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/elastic/go-elasticsearch/v7/estransport"
@@ -27,20 +28,20 @@ func init() {
 	flag.Parse()
 }
 
-func deletebyquery(es *elasticsearch.Client)  {
+func deletebyquery(es *elasticsearch.Client) {
 	// Delete by query
 	res, err := es.DeleteByQuery(
-		[]string{"collection-index"},
+		[]string{"foo-index"},
 		esutil.NewJSONReader(map[string]interface{}{
 			"query": map[string]interface{}{
 				"match": map[string]interface{}{
-					//"collection.name": "Popular",
+					//"foo.name": "Popular",
 					"name": "updtd",
 				},
 			},
 		}),
 		es.DeleteByQuery.WithContext(context.Background()),
-		es.DeleteByQuery.WithDocumentType("collection_document"),
+		es.DeleteByQuery.WithDocumentType("foo_document"),
 		//es.Search.WithTrackTotalHits(true),
 		es.DeleteByQuery.WithPretty(),
 	)
@@ -78,9 +79,9 @@ func delete(es *elasticsearch.Client) {
 
 			// Set up the request object.
 			req := esapi.DeleteRequest{
-				Index:      "collection-index",
-				DocumentType: "collection_document",
-				DocumentID: "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-"+title,
+				Index: "foo-index",
+				//DocumentType: "foo_document",
+				DocumentID: "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-" + title,
 				//IfPrimaryTerm:       nil,
 				//IfSeqNo:             nil,
 				//Refresh:             "",
@@ -89,7 +90,7 @@ func delete(es *elasticsearch.Client) {
 				//Version:             nil,
 				//VersionType:         "",
 				//WaitForActiveShards: "",
-				Pretty:              true,
+				Pretty: true,
 				//Human:               true,
 				//ErrorTrace:          true,
 				//FilterPath:          nil,
@@ -103,6 +104,7 @@ func delete(es *elasticsearch.Client) {
 			}
 			defer ires.Body.Close()
 
+			log.Println(ires)
 			if ires.IsError() {
 				log.Printf("Error deleting document ID=%d; response: %v", i+1, ires)
 			} else {
@@ -138,50 +140,21 @@ func create(es *elasticsearch.Client) {
 			// Build the request body.
 			var b strings.Builder
 			b.WriteString(`{
-"id": "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-`+title+`",
-"collection_id": "713e5117-cc65-438f-8744-96e951e1412c",
-"restaurant_id": "d81fc30a-8919-4ecc-a200-ae9593d364ef",
-"collection": { "name": "Popular","icon": "http://food-m.p-stageenv.xyz/food/icon_ic_Most%20Popular.png","priority": 0,"cover": "http://food-m.p-stageenv.xyz/food/col_cover_Most%20Popular.png","banner": "http://food-m.p-stageenv.xyz/food/col_banner_Collection-Banner-Most%20Popular.png","is_visible": true},
-"location": { "lat": 23.789301,"lon": 90.403732},
-"cuisines": [ { "id": "611d287c-786a-4971-93d6-f8b173f84989","name": "Fast Food"},{ "id": "0a67c68e-ae86-45c1-be0d-344432002f73","name": "Chinese"}],
-"schedules": [ { "opening": { "day": 2,"time": 43200},"closing": { "day": 2,"time": 79200}},{ "opening": { "day": 7,"time": 43200},"closing": { "day": 7,"time": 79200}},{ "opening": { "day": 4,"time": 43200},"closing": { "day": 4,"time": 79200}},{ "opening": { "day": 6,"time": 43200},"closing": { "day": 6,"time": 79200}},{ "opening": { "day": 5,"time": 43200},"closing": { "day": 5,"time": 79200}},{ "opening": { "day": 1,"time": 43200},"closing": { "day": 1,"time": 79200}},{ "opening": { "day": 3,"time": 43200},"closing": { "day": 3,"time": 79200}}],
-"address": "House-24, Road-8, Block-F, Banani",
-"name": "Foodiz Avenue",
-"logo": null,
-"min_delivery_time": "60 min",
-"min_order_value": 50,
-"min_delivery_fee": 60,
-"visible_in_app": true,
-"is_flagged": false,
-"discount_type": "PERCENTAGE",
-"discount": 0,
-"search_score": 2,
-"sort_order": 7,
-"banner": "http://food-m.p-stageenv.xyz/food/29_banner.jpg",
-"average_rating": 5,
-"free_delivery": false,
-"radius_promotion": false,
-"delivery_fee": 60,
-"discounted_delivery_fee": 19,
-"rating_count": 19,
-"accepting_orders": true,
-"is_tong": false,
-"is_pharma": false,
-"custom_radius": null,
-"badges": null
+"id": "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-` + title + `",
+"foo": { "name": "Popular"},
+"name": "Welcome Foo",
 }`)
 			//b.WriteString(title)
 			//b.WriteString(`"}`)
 
-
 			// Set up the request object.
 			req := esapi.CreateRequest{
-				Index:      "collection-index",
-				DocumentType: "collection_document",
-				DocumentID: "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-"+title,
+				Index: "foo-index",
+				//DocumentType: "foo_document",
+				DocumentID: "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-" + title,
 				Body:       strings.NewReader(b.String()),
 				//Refresh:    "true",
-
+				Pretty: true,
 			}
 
 			// Perform the request with the client.
@@ -191,6 +164,7 @@ func create(es *elasticsearch.Client) {
 			}
 			defer ires.Body.Close()
 
+			log.Println(ires)
 			if ires.IsError() {
 				log.Printf("Error creating document ID=%d => %v", i+1, ires)
 			} else {
@@ -227,39 +201,41 @@ func update(es *elasticsearch.Client) {
 			var b strings.Builder
 
 			b.WriteString(`{
-"id": "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-`+title+`",
-"name": "Foodiz Avenue - updtd `+title+`"
+"id": "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-` + title + `",
+"name": "Welcome Foo - updtd ` + title + `"
 }`)
-			a := struct{
-				ID string `json:"id"`
+			a := struct {
+				ID   string `json:"id"`
 				Name string `json:"name"`
 			}{
-				ID:   "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-"+title,
-				Name: "Foodiz Avenue - updtd "+title,
+				ID:   "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-" + title,
+				Name: "Welcome Foo - updtd " + title,
 			}
 
 			log.Println(b.String())
 			// Set up the request object.
 			// Perform the request with the client.
 			ires, ierr := esapi.UpdateRequest{
-				Index:      "collection-index",
-				DocumentType: "collection_document",
-				DocumentID: "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-"+title,
-				Body:       esutil.NewJSONReader(map[string]interface{}{
+				//Index:      "foo-index",
+				//DocumentType: "foo_document",
+				DocumentID: "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-" + title,
+				Body: esutil.NewJSONReader(map[string]interface{}{
 					"doc": &a,
 				}),
 				//Body:       strings.NewReader(b.String()),
 				//Body:       bytes.NewReader([]byte(`{
-//"id": "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-`+title+`",
-//"name": "Foodiz Avenue"
-//}`)),
+				//"id": "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-`+title+`",
+				//"name": "Welcome Foo"
+				//}`)),
 				//Refresh:    "true",
+				Pretty: true,
 			}.Do(context.Background(), es)
 			if ierr != nil {
 				log.Fatalf("Error getting response: %s", ierr)
 			}
 			defer ires.Body.Close()
 
+			log.Println(ires)
 			if ires.IsError() {
 				log.Printf("Error updating document ID=%d => %s", i+1, ires)
 			} else {
@@ -297,32 +273,33 @@ func index(es *elasticsearch.Client) {
 			var b strings.Builder
 
 			b.WriteString(`{
-"id": "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-`+title+`",
-"name": "Foodiz Avenue - updtd `+title+`"
+"id": "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-` + title + `",
+"name": "Welcome Foo - updtd ` + title + `"
 }`)
-			a := struct{
-				ID string `json:"id"`
+			a := struct {
+				ID   string `json:"id"`
 				Name string `json:"name"`
 			}{
-				ID:   "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-"+title,
-				Name: "Foodiz Avenue - updtd "+title,
+				ID:   "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-" + title,
+				Name: "Welcome Foo - updtd " + title,
 			}
 
 			log.Println(b.String())
 			// Set up the request object.
 			// Perform the request with the client.
 			ires, ierr := esapi.IndexRequest{
-				Index:      "collection-index",
-				DocumentType: "collection_document",
-				DocumentID: "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-"+title,
+				//Index:      "foo-index",
+				//DocumentType: "foo_document",
+				DocumentID: "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-" + title,
 				Body:       esutil.NewJSONReader(&a),
 
 				//Body:       strings.NewReader(b.String()),
 				//Body:       bytes.NewReader([]byte(`{
-//"id": "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-`+title+`",
-//"name": "Foodiz Avenue"
-//}`)),
+				//"id": "e73ad3f5-b370-4c73-86a3-fb63f8caf90c-`+title+`",
+				//"name": "Welcome Foo"
+				//}`)),
 				//Refresh:    "true",
+				Pretty: true,
 			}.Do(context.Background(), es)
 			if ierr != nil {
 				log.Fatalf("Error getting response: %s", ierr)
@@ -357,7 +334,7 @@ func search(es *elasticsearch.Client) {
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"match": map[string]interface{}{
-				//"collection.name": "Popular",
+				//"foo.name": "Popular",
 				"id": "-Test ",
 			},
 		},
@@ -367,8 +344,8 @@ func search(es *elasticsearch.Client) {
 	// Perform the search request.
 	res, err := es.Search(
 		es.Search.WithContext(context.Background()),
-		es.Search.WithIndex("collection-index"),
-		es.Search.WithDocumentType("collection_document"),
+		es.Search.WithIndex("foo-index"),
+		es.Search.WithDocumentType("foo_document"),
 		es.Search.WithBody(esutil.NewJSONReader(&query)),
 		//es.Search.WithTrackTotalHits(true),
 		es.Search.WithPretty(),
@@ -379,6 +356,8 @@ func search(es *elasticsearch.Client) {
 	defer res.Body.Close()
 
 	if res.IsError() {
+		log.Printf("Error searching document with query=%v: \n--->>>\n%v", query, res)
+
 		var e map[string]interface{}
 		if err := json.NewDecoder(res.Body).Decode(&e); err != nil {
 			log.Fatalf("Error parsing the response body: %s", err)
@@ -413,10 +392,112 @@ func search(es *elasticsearch.Client) {
 	log.Println(strings.Repeat("=", 37))
 }
 
+func putAlias(es *elasticsearch.Client) {
+	fmt.Println("+++++++++++++ put alias ++++++++++")
+	// Build the request body.
+	a := map[string]interface{}{
+		"actions": []map[string]interface{}{
+			{
+				"add": map[string]interface{}{
+					//"index": "foo-index",
+					"alias": "alias3",
+				},
+			},
+		},
+	}
+
+	// Set up the request object.
+	// Perform the request with the client.
+	ires, ierr := esapi.IndicesPutAliasRequest{
+		Index: []string{"foo-index"},
+		Body:  esutil.NewJSONReader(&a),
+		//Body:       strings.NewReader(b.String()),
+		//Body:       bytes.NewReader([]byte(`{
+		Pretty: true,
+	}.Do(context.Background(), es)
+	if ierr != nil {
+		log.Fatalf("Error getting response: %s", ierr)
+	}
+	defer ires.Body.Close()
+
+	if ires.IsError() {
+		log.Printf("Error put aliasing => %s", ires)
+	}
+
+	log.Println(strings.Repeat("-", 37))
+}
+
+func putIndex(es *elasticsearch.Client) {
+	fmt.Println("+++++++++++++ put index ++++++++++")
+	// Build the request body.
+	a := map[string]interface{}{
+		"settings": map[string]interface{}{
+			"number_of_shards":   2,
+			"number_of_replicas": 2,
+		},
+		"mappings": map[string]interface{}{
+			"properties": map[string]interface{}{
+				"field1": map[string]interface{}{"type": "text"},
+			},
+		},
+	}
+
+	// Set up the request object.
+	// Perform the request with the client.
+	ires, ierr := esapi.IndicesCreateRequest{
+		Index: "test-index",
+		Body:  esutil.NewJSONReader(&a),
+		//Body:       strings.NewReader(b.String()),
+		//Body:       bytes.NewReader([]byte(`{
+		Pretty: true,
+	}.Do(context.Background(), es)
+	if ierr != nil {
+		log.Fatalf("Error getting response: %s", ierr)
+	}
+	defer ires.Body.Close()
+
+	if ires.IsError() {
+		log.Printf("Error create index => %s", ires)
+	}
+
+	log.Println(strings.Repeat("-", 37))
+}
+
+func deleteIndex(es *elasticsearch.Client) {
+	fmt.Println("+++++++++++++ delete index ++++++++++")
+	// Set up the request object.
+	// Perform the request with the client.
+	ires, ierr := esapi.IndicesDeleteRequest{
+		Index: []string{"test-index"},
+		//AllowNoIndices:    nil,
+		//ExpandWildcards:   "",
+		IgnoreUnavailable: func(v bool) *bool { return &v }(true),
+		//MasterTimeout:     0,
+		//Timeout:           0,
+		//Body:       strings.NewReader(b.String()),
+		//Body:       bytes.NewReader([]byte(`{
+		Pretty: true,
+		//Human:      false,
+		//ErrorTrace: false,
+		//FilterPath: nil,
+		//Header:     nil,
+	}.Do(context.Background(), es)
+	if ierr != nil {
+		log.Fatalf("Error getting response: %s", ierr)
+	}
+	defer ires.Body.Close()
+
+	if ires.IsError() {
+		log.Printf("Error create index => %s", ires)
+	}
+
+	log.Println(strings.Repeat("-", 37))
+}
+
 func main() {
 	log.SetFlags(0)
 
-	var r  map[string]interface{}
+	var r map[string]interface{}
 
 	// Initialize a client with the default settings.
 	//
@@ -466,6 +547,12 @@ func main() {
 			search(es)
 		case "delete":
 			delete(es)
+		case "put-alias":
+			putAlias(es)
+		case "put-index":
+			putIndex(es)
+		case "del-index":
+			deleteIndex(es)
 		}
 	}
 }
